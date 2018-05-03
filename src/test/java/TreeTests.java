@@ -1,20 +1,20 @@
-import avbp.Node;
-import avbp.Tree;
+
 import org.junit.Assert;
 import org.junit.Test;
-
+import t.agds.Node;
+import t.agds.Tree;
 
 
 public class TreeTests {
 
-    static Tree t;
+    static Tree<Double> t;
 
 
 
     @Test
     public void checkAddingToTree() {
 
-        t = new Tree();
+        t = new Tree<Double>();
 
         t.insert( 5.0 );
 
@@ -213,7 +213,7 @@ public class TreeTests {
         Assert.assertEquals("Cannot insert node to tree",false, t.getRoot().isLeaf());
 
         // LEFT LEFT = 1
-        Node n = t.getRoot().left.left;
+        Node<Double> n = t.getRoot().left.left;
         Assert.assertEquals("Cannot insert node to tree",1.0, n.FST_EL.getKey(),0.0);
         Assert.assertEquals("Cannot insert node to tree",2, n.FST_EL.getCtr());
         Assert.assertEquals("Cannot insert node to tree",null, n.SCD_EL);
@@ -879,7 +879,7 @@ public class TreeTests {
 
     @Test
     public void checkRemovingFromTree() {
-        t = new Tree();
+        t = new Tree<Double>();
         t.insert(1.0);
         t.insert(2.0);
         t.insert(3.0);
@@ -927,7 +927,7 @@ public class TreeTests {
         Assert.assertEquals("Cannot insert node to tree",false, t.getRoot().isLeaf());
 
         // LEFT LEFT = 1
-        Node n = t.getRoot().left.left;
+        Node<Double> n = t.getRoot().left.left;
         Assert.assertEquals("Cannot insert node to tree",1.0, n.FST_EL.getKey(),0.0);
         Assert.assertEquals("Cannot insert node to tree",1, n.FST_EL.getCtr());
         Assert.assertEquals("Cannot insert node to tree",null, n.SCD_EL);
@@ -994,5 +994,43 @@ public class TreeTests {
 
         t.printTree();
     }
+
+    @Test
+    public void getMinMaxTest() {
+
+        t = new Tree<Double>();
+        for (int i = 0; i < 100; i++) {
+            t.insert( Double.valueOf( i - 50 ));
+        }
+
+        Assert.assertEquals("Min is not working", -50.0, (Double)t.getMin().getKey(), 0.0 );
+        Assert.assertEquals("Min is not working", 1, t.getMin().getCtr());
+
+
+        Assert.assertEquals("MAX is not working", 49.0, (Double)t.getMax().getKey(), 0.0 );
+        Assert.assertEquals("MAX is not working", 1, t.getMax().getCtr());
+
+    }
+
+
+    @Test
+    public void getSumAvgTest() {
+
+        t = new Tree<Double>();
+        Double sum = 0.0;
+        int ctr = 100;
+        for (int i = 0; i < 100; i++) {
+            sum += i - 50;
+            t.insert( Double.valueOf( i - 50 ));
+        }
+
+        Assert.assertEquals("SUM is not working", sum, (Double)t.getSum().getKey(), 0.0 );
+        Assert.assertEquals("SUM is not working", ctr, t.getSum().getCtr());
+
+        Assert.assertEquals("SUM is not working", sum / ctr, (Double)t.getAvg().getKey(), 0.0 );
+        Assert.assertEquals("SUM is not working", 1, t.getAvg().getCtr());
+
+    }
+
 
 }
