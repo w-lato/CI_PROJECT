@@ -399,9 +399,10 @@ public class Tree <T extends Comparable<T>> {
 
         for(Element<T> it : l)
         {
-            sum += (Double)it.key;
+            sum += (Double)it.key * it.getCtr();
             count_el += it.getCtr();
         }
+//        System.out.println( sum + " " + count_el + " " + sum / count_el );
         return new Element(sum / count_el, count_el / l.size());
     }
 

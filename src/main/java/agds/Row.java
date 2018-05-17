@@ -6,7 +6,6 @@ public class Row {
 
     public final int id;
 
-
     public Double X = 0.0;
 
     //DATA OF ROW
@@ -22,7 +21,4 @@ public class Row {
             this.data.add(it);
         }
     }
-
-
-
 }

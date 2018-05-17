@@ -10,6 +10,7 @@ import utils.XLSParser;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class AGDS {
 
@@ -251,6 +252,20 @@ public class AGDS {
 
     }
 
+    public AGDS getAGDSOfClass(Double C_ID)
+    {
+        // GET ELEM WHICH IS CONNECTED TO ALL Rs FROM GIVEN CLASS
+        Element<Double> e = A[ this.N - 1 ].getElem( C_ID );
+
+        ArrayList<Row> l = new ArrayList<>();
+        e.E.forEach((R_ID)-> {
+            l.add( R.get( R_ID ) );
+        });
+
+        // CREATE A TREE FROM OBTAINED Rs
+        return new AGDS( l );
+    }
+
     /////////////////////////////////////////////////////////////////////////////////
     //
     //
@@ -367,16 +382,44 @@ public class AGDS {
 
     }
 
+
+    public void removeR( int R_ID ) {
+
+        for (int i = 0; i < R.size() ; i++) {
+            if( R.get( i ).id == R_ID )
+            {
+                R.remove( i );
+                break;
+            }
+        }
+        AGDS agds = new AGDS( this.R );
+
+        this.A = agds.A;
+        this.N = agds.N;
+        this.param_range  = agds.param_range;
+        agds = null;
+    }
+
+    private void calculateParamTanges()
+    {
+
+    }
+
     public void predicValuesFor( Row r)
     {
+//        Double[] a =
+//                {
+//                        getAGDSOfClass(0.0).A[1].getAvg().getKey(),
+//                        getAGDSOfClass(1.0).A[1].getAvg().getKey(),
+//                        getAGDSOfClass(2.0).A[1].getAvg().getKey()
+//                };
+
         putNewRow( r );
 
-        // LAST INSERTED ELEM
+        // TAKE LAST INSERTED ELEM AND FIND MOST SIMILAR Rs
         associateFrom( R.size() - 1 );
 
-        printSimilarRs();
-
-        // TAKE MOST SIMILAR VALUES
+        // TAKE 10%  MOST SIMILAR VALUES FROM LIST
         ArrayList<Row> sorted = new ArrayList<Row>();
         for (int i = 0; i < R.size(); i++) {
             sorted.add( R.get(i) );
@@ -390,24 +433,45 @@ public class AGDS {
             return 0;
         });
 
+
+        // PREDICT MISSING VALUES
         Double sim_sum = 0.0;
         Double sum = 0.0;
         int ctr = 0;
-//        for (int i = R.size() - 2; i > R.size() - 15 ; i--) {
-//            sim_sum += sorted.get( i ).X;
-//            ctr++;
-//        }
-//
-//        for (int i = R.size() - 2; i > R.size() - 15 ; i--) {
-//            sum += sorted.get( i ).X / sim_sum * sorted.get( i ).data.get( 1 );
-//        }
-        for (int i = R.size() - 2; i > R.size() - 14 ; i--) {
-            sum += sorted.get( i ).data.get( 1 );
-            ctr++;
-        }
-        sum = sum / ctr;
+        for (int i = 0; i < this.N; i++)
+        {
+            if( r.data.get(i) == null )
+            {
+                sum = 0.0;
+                ctr = 0;
+                for (int j = R.size() - 2; j > R.size() - R.size() / 10 ; j--)
+                {
+                    sum += sorted.get( j ).data.get( i );
+                    ctr++;
+                }
+                sum = sum / ctr;
 
-        System.out.println("predicted value of 2.7 is: " + sum + "  so " + (100 - 2.7 / sum * 100.0) + "% miss");
+                // VALUE FOR CLASS
+                if( i == N - 1 )
+                {
+                    sum = Double.valueOf( Math.round( sum.doubleValue() ));
+                }
+                // ADD VALUE AND EDGES AND ATTRIBUTES
+                r.data.set(i, sum);
+                A[i].insert( sum );
+
+
+                A[i].addEdgesToNodes( R, i );
+                A[i].setNeighbors();
+
+                Double min = A[i].getMin().getKey();
+                Double max = A[i].getMax().getKey();
+                param_range[i] = max - min;
+
+            }
+        }
+//        printRs();
+//        System.out.println("predicted value of 2.7 is: " + sum + "  so " + (100 - 2.7 / sum * 100.0) + "% miss");
 
     }
 
@@ -417,6 +481,18 @@ public class AGDS {
     //
     //                          GETTERS AND SETTERS
 
+
+    public int getN() {
+        return N;
+    }
+
+    public Tree<Double>[] getA() {
+        return A;
+    }
+
+    public ArrayList<Row> getR() {
+        return R;
+    }
 
     public static void main(String[] args)
     {
@@ -435,6 +511,8 @@ public class AGDS {
 
         agds.printStats();
         agds.printStatsOfClass( 0.0 );
+        agds.printStatsOfClass( 1.0 );
+        agds.printStatsOfClass( 2.0 );
 
         Row r = new Row(127,
                 new ArrayList<Double>() {{ // 102
@@ -442,14 +520,17 @@ public class AGDS {
 //            add(2.7);
             add(null);
             add(5.1);
-//            add(1.9);
             add(1.9);
+//            add(null);
+//            add(2.0);
 //            add(2.0);
             add(null);
         }}
+
         );
         agds.predicValuesFor( r );
-
+        agds.removeR( 127 );
+        agds.printRs();
     }
 }
 
