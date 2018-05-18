@@ -32,15 +32,19 @@ import static java.lang.Thread.sleep;
 public class GraphTest
 {
 
-    public static SingleGraph graph;
+    private boolean isDisplayOn = false;
+
+    public  SingleGraph graph;
 
 //    private static  final int VO  = 1000;
-    private static  final int VO  = 300;
-    private static  final int HO  = 200;
-    private static  final int NODE_SIZE  = 20;
-    private static  final int RVD  = 500;
+    private   final int VO  = 300;
+    private   final int HO  = 200;
+    private   final int NODE_SIZE  = 20;
+    private   final int RVD  = 500;
 
-    public static void printAGDS(AGDS agds) {
+    public  void printAGDS(AGDS agds) {
+
+        this.isDisplayOn = true;
 
         String style = "node {" +
                 "size-mode: dyn-size;" +
@@ -165,12 +169,12 @@ public class GraphTest
 
 
 
-    private static void deleteGraphNode( String nodeId )
+    private  void deleteGraphNode( String nodeId )
     {
         graph.removeNode( nodeId );
     }
 
-    public static boolean deleteNode( AGDS agds, int rowID )
+    public  boolean deleteNode( AGDS agds, int rowID )
     {
 
         deleteRowNode( rowID, agds.getR() );
@@ -205,7 +209,7 @@ public class GraphTest
     }
 
 
-    private static boolean deleteRowNode( int rowID, ArrayList<Row> R )
+    private  boolean deleteRowNode( int rowID, ArrayList<Row> R )
     {
         String nodeID = "R_" + String.valueOf( rowID );
 
@@ -245,7 +249,7 @@ public class GraphTest
 
 
 
-    private static boolean deleteAttributeNode( Double val, int attTreeID, ArrayList<Element<Double>> atts)
+    private  boolean deleteAttributeNode( Double val, int attTreeID, ArrayList<Element<Double>> atts)
     {
         String nodeID =  "A" + String.valueOf(attTreeID) + "_" + String.valueOf(val);
         Element<Double> cur;
@@ -305,7 +309,7 @@ public class GraphTest
 
 
 
-    public static void putNode( int rowID, ArrayList<Row> R, AGDS agds )
+    public  void putNode( int rowID, ArrayList<Row> R, AGDS agds )
     {
         String nodeID = "R_" + String.valueOf( rowID );
         // FIND RIGHT NEIGHBOUR
@@ -364,7 +368,7 @@ public class GraphTest
         }
     }
 
-    private static void putNewAttNode( Double val, int attTreeID, ArrayList<Element<Double>> atts )
+    private  void putNewAttNode( Double val, int attTreeID, ArrayList<Element<Double>> atts )
     {
         String nodeID =  "A" + String.valueOf(attTreeID) + "_" + String.valueOf(val);
         Element<Double> cur;
@@ -498,7 +502,7 @@ public class GraphTest
     }
 
 
-    public static void removeColorsAndSizes()
+    public  void removeColorsAndSizes()
     {
         graph.getNodeSet().forEach(node ->{
             if(node.hasAttribute("ui.color")) node.removeAttribute("ui.color");
@@ -516,7 +520,7 @@ public class GraphTest
 
     // if AGDS contains rows which are not present on graph then add those nodes
     // if AGDS does not contain rows which are present on grpah then delete them
-    public static void update(AGDS agds)
+    public  void update(AGDS agds)
     {
         // ADD NEW ROWS IF NOT PRESENT
         for (int i = 0; i < agds.getR().size(); i++)
@@ -577,89 +581,12 @@ public class GraphTest
         }
     }
 
-/*
-
-    public static void main(String args[]) {
-
-//        AGDS agds = new AGDS(CSVReader.readDiabetesRetinopathyData());
-        AGDS agds = new AGDS();
-        agds.loadIrisData();
-
-        for (int i = 6; i < 127; i++) {
-            agds.removeR( i );
-        }
-        agds.printRs();
-        System.out.println("===============" + agds.getR().size());
-
-//        agds.associateFrom( 0 );
-//        agds.associateFrom(  0 );
-        GraphTest.printAGDS( agds );
-
-        Row r = new Row(-1,
-                new ArrayList<Double>() {{ // 102
-                    add(5.8);
-//            add(2.7);
-                    add(null);
-                    add(5.1);
-                    add(1.9);
-//            add(null);
-//            add(2.0);
-            add(2.0);
-//                    add(null);
-                }}
-
-        );
-        System.out.println(" fasdfasdf");
-//        agds.printStats();
-//        agds.putNewRow( r );
-
-//        for (int i = 0; i < agds.getR().size(); i++) {
-//            if( agds.getR().get(i).id == 50 )
-//            {
-//                for (int j = 0; j < agds.getR().get(i).data.size(); j++) {
-//                    System.out.println( agds.getR().get(i).data.get(j) );
-//                }
-//            }
-//        }
-
-//        GraphTest.deleteNode(agds ,5 );
-//        agds.removeR( 5 );
-//        agds.putNewRow( r );
-//        GraphTest.graph.getNodeSet().forEach(s -> {
-//            System.out.println( s.getId() + "  " + s.getIndex() );
-//        });
-//        GraphTest.graph.removeNode("R_126");
-
-//        System.out.println( GraphTest.graph.getNode(126).hasAttribute("x") );
-//        System.out.println( GraphTest.graph.getNode(126).hasAttribute("xyz") );
-//        System.out.println( (int)GraphTest.graph.getNode(126).getAttribute("x") );
-
-        try {
-            sleep(1000);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        GraphTest.deleteNode(agds ,1 );
-
-//        try {
-//            sleep(1000);
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//
-        GraphTest.putNode(1, agds.getR(),agds );
-
-//        GraphTest.deleteNode(agds ,1 );
-//        GraphTest.putNode(1, agds.getR(),agds );
-
-        //GraphTest.putNode( -1, agds.getR() );
-
-//        Graph g = new SingleGraph( "test" );
-
-
+    public boolean isDisplayed()
+    {
+        return this.isDisplayOn;
     }
-*/
+
+
 
 
     public static void main(String[] args) {
@@ -675,13 +602,13 @@ public class GraphTest
             list.add( agds.getR().get(i) );
         }
 
-
-        GraphTest.printAGDS( agds );
+        GraphTest gt = new GraphTest();
+        gt.printAGDS( agds );
 
         agds.removeR( 1 );
         agds.removeR( 5 );
 
-        GraphTest.update( agds );
+        gt.update( agds );
 
 //
 //        agds.putNewRow( list.get(1) );

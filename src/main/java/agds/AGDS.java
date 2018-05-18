@@ -71,31 +71,31 @@ public class AGDS {
         }
     }
 
-    public void loadDiabetesData()
-    {
-        this.R = CSVReader.readDiabetesRetinopathyData();
-        this.N = R.get(0).data.size();
-
-        A = new Tree[N];
-        for (int i = 0; i < N; i++)
-            A[i] = new Tree<Double>();
-
-
-        // PUT DATA IN ATTRIBUTE'S TREE
-        for( Row it : R )
-        {
-            for (int i = 0; i < N; i++)
-            {
-                A[i].insert( it.data.get( i ) );
-            }
-        }
-
-        // FILL EDGES OF EVERY ELEM IN ATTR'S TREE
-        for (int i = 0; i < N; i++) {
-            A[i].addEdgesToNodes( R, i );
-        }
-
-    }
+//    public void loadDiabetesData()
+//    {
+//        this.R = CSVReader.readDiabetesRetinopathyData();
+//        this.N = R.get(0).data.size();
+//
+//        A = new Tree[N];
+//        for (int i = 0; i < N; i++)
+//            A[i] = new Tree<Double>();
+//
+//
+//        // PUT DATA IN ATTRIBUTE'S TREE
+//        for( Row it : R )
+//        {
+//            for (int i = 0; i < N; i++)
+//            {
+//                A[i].insert( it.data.get( i ) );
+//            }
+//        }
+//
+//        // FILL EDGES OF EVERY ELEM IN ATTR'S TREE
+//        for (int i = 0; i < N; i++) {
+//            A[i].addEdgesToNodes( R, i );
+//        }
+//
+//    }
 
     public void loadIrisData()
     {
@@ -137,7 +137,6 @@ public class AGDS {
 
         // FILL EDGES AND NEIGHBORS OF EVERY ELEM IN ATTR'S TREE
         for (int i = 0; i < N; i++) {
-            System.out.println( i );
             A[i].addEdgesToNodes( R, i );
             A[i].setNeighbors();
         }
@@ -149,7 +148,6 @@ public class AGDS {
             Double min = A[i].getMin().getKey();
             Double max = A[i].getMax().getKey();
             param_range[i] = max - min;
-            System.out.println(i + " : min " + min + " max " + max);
         }
 
     }
@@ -376,6 +374,7 @@ public class AGDS {
             {
                 Double min = A[i].getMin().getKey();
                 Double max = A[i].getMax().getKey();
+                System.out.println( "min " + min + " " + max + " " + i + " " + param_range);
                 param_range[i] = max - min;
             }
         }

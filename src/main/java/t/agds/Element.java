@@ -46,7 +46,7 @@ public class Element<T extends Comparable<T>> {
     //
     //
     //
-    //                          UTILS
+    //                              UTILS
 
     public void inc() {
         this.ctr++;
