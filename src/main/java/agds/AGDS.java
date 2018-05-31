@@ -285,7 +285,16 @@ public class AGDS {
             it.X = 0.0;
         }
 
-        Row SRC = R.get( R_ID );
+        Row SRC = R.get( 0 );
+        for (int i = 0; i < R.size(); i++)
+        {
+            if( R.get( i ).id == R_ID )
+            {
+                SRC = R.get( i );
+            }
+        }
+
+
         // find all vals associated to given R and set X = 1 and calculated all lefts and rigts
         // and then add weights to connected Rs
         for (int i = 0; i < N; i++)
@@ -340,7 +349,13 @@ public class AGDS {
     {
         el.E.forEach((R_ID)->
         {
-            R.get( (int)R_ID ).X += el.X / this.N;
+            for (int i = 0; i < R.size(); i++) {
+                if( R.get( i ).id == (int)R_ID )
+                {
+                    R.get( i ).X += el.X / this.N;
+                }
+            }
+//            R.get( (int)R_ID ).X += el.X / this.N;
         });
 
     }
@@ -384,13 +399,23 @@ public class AGDS {
 
     public void removeR( int R_ID ) {
 
-        for (int i = 0; i < R.size() ; i++) {
+        for (int i = 0; i < R.size() ; i++)
+        {
             if( R.get( i ).id == R_ID )
             {
-                R.remove( i );
+                this.R.remove( i );
                 break;
             }
         }
+        // iterate over attributes and delte connections to deleted R
+//        for (int i = 0; i < this.N; i++)
+//        {
+//            for (int j = 0; j < A[i].size(); j++)
+//            {
+//                A[i].remove(  );
+//            }
+//        }
+
         AGDS agds = new AGDS( this.R );
 
         this.A = agds.A;

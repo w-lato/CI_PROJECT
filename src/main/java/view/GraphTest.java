@@ -37,6 +37,7 @@ public class GraphTest
     public  SingleGraph graph;
 
 //    private static  final int VO  = 1000;
+//    private   final int VO  = 300;
     private   final int VO  = 300;
     private   final int HO  = 200;
     private   final int NODE_SIZE  = 20;
@@ -142,8 +143,8 @@ public class GraphTest
 
 
 
-        graph.display( false );
-//        graph.display( );
+//        graph.display( false );
+        graph.display( );
 
 //        try {
 //            sleep(1000);
