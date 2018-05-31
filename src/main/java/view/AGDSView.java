@@ -22,9 +22,13 @@ import javafx.stage.Stage;
 import model.DiabetesData;
 import model.FlareData;
 import model.VehiclesData;
+import t.agds.Element;
 import utils.CSVReader;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.ListIterator;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AGDSView extends Application {
@@ -166,7 +170,7 @@ public class AGDSView extends Application {
         scene = new Scene(new Group());
         stage.setTitle("Table View Sample");
         stage.setWidth(2220);
-        stage.setHeight(1130);
+        stage.setHeight(1230);
 
         final Button diabetesButton = new Button("Load diabates data");
         final Button secDataButton = new Button("Load vehicles data");
@@ -580,6 +584,11 @@ public class AGDSView extends Application {
         majorVarianceCol.setCellValueFactory(
                 new PropertyValueFactory<DiabetesData, Integer>("Major_variance"));
 
+        TableColumn minorVarianceCol = new TableColumn("Minor variance");
+        minorVarianceCol.setMinWidth(100);
+        minorVarianceCol.setCellValueFactory(
+                new PropertyValueFactory<DiabetesData, Integer>("Minor_variance"));
+
 
         TableColumn gyrationRadiusCol = new TableColumn("Gyration Radius");
         gyrationRadiusCol.setMinWidth(100);
@@ -647,6 +656,7 @@ public class AGDSView extends Application {
                 praxisRectCol,
                 lengthRectCol,
                 majorVarianceCol,
+minorVarianceCol,
                 gyrationRadiusCol,
                 majorSkewnessCol,
                 minorSkewnessCol,
@@ -967,6 +977,92 @@ public class AGDSView extends Application {
             }
         });
 
+// FILTERING DATA
+
+        final TextField filterInput = new TextField();
+//        filterInput.setPromptText("-,-,-,-,0:50,-,-,-,-,-,-,-,-,-,-,0:0,-,-,-,-");
+        filterInput.setText("-,-,-,-,0:50,-,-,-,-,-,-,-,-,-,-,0:0,-,-,-,-");
+        filterInput.setMaxWidth(500);
+
+        final Button filterButton = new Button("Filter by");
+        filterButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                System.out.println( "Filter row" );
+                refillDiabeticTable();
+
+                String[] arr = filterInput.getText().split(",");
+
+                ArrayList<HashSet<Integer>> sets = new ArrayList<HashSet<Integer>>();
+                for (int i = 0; i < arr.length; i++)
+                {
+                    sets.add( new HashSet<Integer>() );
+                }
+
+                // get id meeting constraints
+                for (int i = 0; i < agds.getN(); i++)
+                {
+                    if( !arr[i].equals("-") )
+                    {
+                        Double first = Double.valueOf( arr[i].split(":")[0] );
+                        Double last  = Double.valueOf( arr[i].split(":")[1] );
+
+                        // obtain ID of rows
+                        ArrayList<Element<Double>> list = agds.getA()[i].getSortedList();
+                        for (int j = 0; j < list.size(); j++) {
+                            if( (list.get(j).getKey().compareTo( first ) >= 0)
+                                    && ( list.get(j).getKey().compareTo( last ) <= 0 )  )
+                            {
+                                for(Integer IT : list.get(j).E)
+                                    sets.get(i).add( IT );
+                            }
+
+                        }
+                    }
+                }
+
+                HashSet<Integer> toShow = new HashSet<Integer>();
+
+                // intersect ID from all sets
+                for (int i = 0; i < agds.getN() - 1; i++)
+                {
+                    if( !sets.get(i).isEmpty() )
+                    {
+                        toShow = new HashSet<>( sets.get(i) );
+                        for (int j = i + 1; j < agds.getN(); j++)
+                        {
+                            if ( !sets.get( j ).isEmpty() )
+                            {
+                                toShow.retainAll( sets.get( j ) );
+                            }
+                        }
+                        break;
+                    }
+                }
+//                System.out.println( "show :" + toShow.size());
+//                toShow.forEach( row -> {
+//                    System.out.println( row );
+//                } );
+//                System.out.println( "show :" + toShow.size());
+                // delete all
+                if( toShow.isEmpty() )
+                {
+                    table.getItems().clear();
+                }
+                else {
+                    ListIterator<DiabetesData> it = table.getItems().listIterator();
+                    while( it.hasNext() )
+                    {
+                        if( !toShow.contains( it.next().getID() ) )
+                        {
+                            it.remove();
+                        }
+                    }
+                }
+                table.refresh();
+            }
+        });
+
 
         final VBox vbox = new VBox();
         vbox.setSpacing(5);
@@ -977,8 +1073,7 @@ public class AGDSView extends Application {
         button_row.setSpacing(10);
         button_row.getChildren().addAll( calcButton, graphButton, deleteButton, addButton );
 
-        vbox.getChildren().addAll(label, table, button_row, dataInput);
-
+        vbox.getChildren().addAll(label, table, button_row, dataInput, filterButton, filterInput);
 
 
         ((Group) scene.getRoot()).getChildren().addAll(vbox);
@@ -1134,6 +1229,94 @@ public class AGDSView extends Application {
         });
 
 
+        // FILTERING DATA
+
+        final TextField filterInput = new TextField();
+
+        filterInput.setText("-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,0:1");
+        filterInput.setMaxWidth(500);
+
+        final Button filterButton = new Button("Filter by");
+        filterButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                System.out.println( "Filter row" );
+                refillVehiclesTable();
+
+                String[] arr = filterInput.getText().split(",");
+                System.out.println( arr.length + " " + agds.getN() );
+
+                ArrayList<HashSet<Integer>> sets = new ArrayList<HashSet<Integer>>();
+                for (int i = 0; i < arr.length; i++)
+                {
+                    sets.add( new HashSet<Integer>() );
+                }
+
+                // get id meeting constraints
+                for (int i = 0; i < agds.getN(); i++)
+                {
+                    if( !arr[i].equals("-") )
+                    {
+                        Double first = Double.valueOf( arr[i].split(":")[0] );
+                        Double last  = Double.valueOf( arr[i].split(":")[1] );
+
+                        // obtain ID of rows
+                        ArrayList<Element<Double>> list = agds.getA()[i].getSortedList();
+                        for (int j = 0; j < list.size(); j++) {
+                            System.out.println( list.get(j).getKey() + " "  +(list.get(j).getKey().compareTo( first ) >= 0) + " " + ( list.get(j).getKey().compareTo( last ) <= 0 ));
+                            if( (list.get(j).getKey().compareTo( first ) >= 0)
+                                    && ( list.get(j).getKey().compareTo( last ) <= 0 )  )
+                            {
+                                for(Integer IT : list.get(j).E)
+                                    sets.get(i).add( IT );
+                            }
+                        }
+                    }
+                }
+
+                HashSet<Integer> toShow = new HashSet<Integer>();
+
+                // intersect ID from all sets
+                for (int i = 0; i < agds.getN() - 1; i++)
+                {
+                    if( !sets.get(i).isEmpty() )
+                    {
+                        toShow = new HashSet<>( sets.get(i) );
+                        for (int j = i + 1; j < agds.getN(); j++)
+                        {
+                            if ( !sets.get( j ).isEmpty() )
+                            {
+                                toShow.retainAll( sets.get( j ) );
+                            }
+                        }
+                        break;
+                    }
+                }
+                if( toShow.isEmpty() ) toShow = new HashSet<>( sets.get( agds.getN() - 1 ) );
+//                System.out.println( "show :" + toShow.size());
+//                toShow.forEach( row -> {
+//                    System.out.println( row );
+//                } );
+                System.out.println( "show :" + toShow.size());
+                // delete all
+                if( toShow.isEmpty() )
+                {
+                    vehiclesTable.getItems().clear();
+                }
+                else {
+                    ListIterator<VehiclesData> it = vehiclesTable.getItems().listIterator();
+                    while( it.hasNext() )
+                    {
+                        if( !toShow.contains( it.next().getID() ) )
+                        {
+                            it.remove();
+                        }
+                    }
+                }
+                vehiclesTable.refresh();
+            }
+        });
+
         final VBox vbox = new VBox();
         vbox.setSpacing(5);
         vbox.setPadding(new Insets(10, 0, 0, 10));
@@ -1143,7 +1326,7 @@ public class AGDSView extends Application {
         button_row.setSpacing(10);
         button_row.getChildren().addAll( calcButton, graphButton, deleteButton, addButton );
 
-        vbox.getChildren().addAll(label, vehiclesTable, button_row, dataInput);
+        vbox.getChildren().addAll(label, vehiclesTable, button_row, dataInput, filterButton, filterInput);
 
         ((Group) scene.getRoot()).getChildren().addAll(vbox);
 
@@ -1287,6 +1470,106 @@ public class AGDSView extends Application {
         });
 
 
+        // FILTERING DATA
+
+        final TextField filterInput = new TextField();
+
+        filterInput.setText("A:K,-,-,-,-,-,-,-,-,-,-,B:C");
+        filterInput.setMaxWidth(500);
+
+        final Button filterButton = new Button("Filter by");
+        filterButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                System.out.println( "Filter row" );
+                refillFlaresTable();
+
+                String[] arr = filterInput.getText().split(",");
+                System.out.println( arr.length + " " + agds.getN() );
+
+                ArrayList<HashSet<Integer>> sets = new ArrayList<HashSet<Integer>>();
+                for (int i = 0; i < arr.length; i++)
+                {
+                    sets.add( new HashSet<Integer>() );
+                }
+
+                // get id meeting constraints
+                for (int i = 0; i < agds.getN(); i++)
+                {
+                    if( !arr[i].equals("-") )
+                    {
+                        Double first;
+                        Double last;
+
+                        if( arr[i].split(":")[0].matches("[A-Z]") )
+                        {
+                            first = Double.valueOf( (int)arr[i].split(":")[0].charAt(0) );
+                            last = Double.valueOf( (int)arr[i].split(":")[1].charAt(0) );
+                        }
+                        else {
+
+                            first = Double.valueOf( arr[i].split(":")[0] );
+                            last  = Double.valueOf( arr[i].split(":")[1] );
+                        }
+
+
+                        // obtain ID of rows
+                        ArrayList<Element<Double>> list = agds.getA()[i].getSortedList();
+                        for (int j = 0; j < list.size(); j++) {
+                            System.out.println( list.get(j).getKey() + " "  +(list.get(j).getKey().compareTo( first ) >= 0) + " " + ( list.get(j).getKey().compareTo( last ) <= 0 ));
+                            if( (list.get(j).getKey().compareTo( first ) >= 0)
+                                    && ( list.get(j).getKey().compareTo( last ) <= 0 )  )
+                            {
+                                for(Integer IT : list.get(j).E)
+                                    sets.get(i).add( IT );
+                            }
+                        }
+                    }
+                }
+
+                HashSet<Integer> toShow = new HashSet<Integer>();
+
+                // intersect ID from all sets
+                for (int i = 0; i < agds.getN() - 1; i++)
+                {
+                    if( !sets.get(i).isEmpty() )
+                    {
+                        toShow = new HashSet<>( sets.get(i) );
+                        for (int j = i + 1; j < agds.getN(); j++)
+                        {
+                            if ( !sets.get( j ).isEmpty() )
+                            {
+                                toShow.retainAll( sets.get( j ) );
+                            }
+                        }
+                        break;
+                    }
+                }
+                if( toShow.isEmpty() ) toShow = new HashSet<>( sets.get( agds.getN() - 1 ) );
+//                System.out.println( "show :" + toShow.size());
+//                toShow.forEach( row -> {
+//                    System.out.println( row );
+//                } );
+                System.out.println( "show :" + toShow.size());
+                // delete all
+                if( toShow.isEmpty() )
+                {
+                    flareTable.getItems().clear();
+                }
+                else {
+                    ListIterator<FlareData> it = flareTable.getItems().listIterator();
+                    while( it.hasNext() )
+                    {
+                        if( !toShow.contains( it.next().getID() ) )
+                        {
+                            it.remove();
+                        }
+                    }
+                }
+                flareTable.refresh();
+            }
+        });
+
         final VBox vbox = new VBox();
         vbox.setSpacing(5);
         vbox.setPadding(new Insets(10, 0, 0, 10));
@@ -1296,7 +1579,7 @@ public class AGDSView extends Application {
         button_row.setSpacing(10);
         button_row.getChildren().addAll( calcButton, graphButton, deleteButton, addButton );
 
-        vbox.getChildren().addAll(label, flareTable, button_row, dataInput);
+        vbox.getChildren().addAll(label, flareTable, button_row, dataInput, filterButton, filterInput);
 
         ((Group) scene.getRoot()).getChildren().addAll(vbox);
 
@@ -1383,4 +1666,115 @@ public class AGDSView extends Application {
                 )
         );
     }
+
+
+    private void refillDiabeticTable()
+    {
+        table.getItems().clear();
+        data.clear();
+        System.out.println(table.getItems().size());
+        System.out.println(data.size());
+        for (int i = 0; i < agds.getR().size(); i++)
+        {
+            data.add(
+                    new DiabetesData(
+                            Integer.valueOf(agds.getR().get(i).id),
+                            String.valueOf(agds.getR().get(i).X),
+                            String.valueOf(agds.getR().get(i).data.get(0)),
+                            String.valueOf(agds.getR().get(i).data.get(1)),
+                            String.valueOf(agds.getR().get(i).data.get(2)),
+                            String.valueOf(agds.getR().get(i).data.get(3)),
+                            String.valueOf(agds.getR().get(i).data.get(4)),
+                            String.valueOf(agds.getR().get(i).data.get(5)),
+                            String.valueOf(agds.getR().get(i).data.get(6)),
+                            String.valueOf(agds.getR().get(i).data.get(7)),
+                            String.valueOf(agds.getR().get(i).data.get(8)),
+                            String.valueOf(agds.getR().get(i).data.get(9)),
+                            String.valueOf(agds.getR().get(i).data.get(10)),
+                            String.valueOf(agds.getR().get(i).data.get(11)),
+                            String.valueOf(agds.getR().get(i).data.get(12)),
+                            String.valueOf(agds.getR().get(i).data.get(13)),
+                            String.valueOf(agds.getR().get(i).data.get(14)),
+                            String.valueOf(agds.getR().get(i).data.get(15)),
+                            String.valueOf(agds.getR().get(i).data.get(16)),
+                            String.valueOf(agds.getR().get(i).data.get(17)),
+                            String.valueOf(agds.getR().get(i).data.get(18)),
+                            String.valueOf(agds.getR().get(i).data.get(18))
+                    )
+            );
+        }
+        table.setItems( data );
+    }
+
+
+
+    private void refillVehiclesTable()
+    {
+        vehiclesTable.getItems().clear();
+        vehiclesData.clear();
+
+        for (int i = 0; i < agds.getR().size(); i++)
+        {
+            vehiclesData.add(
+                    new VehiclesData(
+                            Integer.valueOf(agds.getR().get(i).id),
+                            String.valueOf(agds.getR().get(i).X),
+                            agds.getR().get(i).data.get(0).intValue(),
+                            agds.getR().get(i).data.get(1).intValue(),
+                            agds.getR().get(i).data.get(2).intValue(),
+                            agds.getR().get(i).data.get(3).intValue(),
+                            agds.getR().get(i).data.get(4).intValue(),
+                            agds.getR().get(i).data.get(5).intValue(),
+                            agds.getR().get(i).data.get(6).intValue(),
+                            agds.getR().get(i).data.get(7).intValue(),
+                            agds.getR().get(i).data.get(8).intValue(),
+                            agds.getR().get(i).data.get(9).intValue(),
+                            agds.getR().get(i).data.get(10).intValue(),
+                            agds.getR().get(i).data.get(11).intValue(),
+                            agds.getR().get(i).data.get(12).intValue(),
+                            agds.getR().get(i).data.get(13).intValue(),
+                            agds.getR().get(i).data.get(14).intValue(),
+                            agds.getR().get(i).data.get(15).intValue(),
+                            agds.getR().get(i).data.get(16).intValue(),
+                            agds.getR().get(i).data.get(17).intValue(),
+                            agds.getR().get(i).data.get(18).intValue()
+                    )
+            );
+        }
+
+        vehiclesTable.setItems( vehiclesData );
+    }
+
+
+
+    private void refillFlaresTable()
+    {
+        flareTable.getItems().clear();
+        flareData.clear();
+
+        for (int i = 0; i < agds.getR().size(); i++)
+        {
+            flareData.add(
+                    new FlareData(
+                            Integer.valueOf(agds.getR().get(i).id),
+                            String.valueOf(agds.getR().get(i).X),
+                            agds.getR().get(i).data.get(0).intValue(),
+                            agds.getR().get(i).data.get(1).intValue(),
+                            agds.getR().get(i).data.get(2).intValue(),
+                            agds.getR().get(i).data.get(3).intValue(),
+                            agds.getR().get(i).data.get(4).intValue(),
+                            agds.getR().get(i).data.get(5).intValue(),
+                            agds.getR().get(i).data.get(6).intValue(),
+                            agds.getR().get(i).data.get(7).intValue(),
+                            agds.getR().get(i).data.get(8).intValue(),
+                            agds.getR().get(i).data.get(9).intValue(),
+                            agds.getR().get(i).data.get(10).intValue(),
+                            agds.getR().get(i).data.get(11).intValue()
+                    )
+            );
+        }
+
+        flareTable.setItems( flareData );
+    }
+
 }
