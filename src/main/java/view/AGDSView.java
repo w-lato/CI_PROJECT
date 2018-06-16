@@ -939,14 +939,16 @@ minorVarianceCol,
                         hasNulls = true;
                     }
                     else {
+
                         try
                         {
                             x = Double.valueOf( data[i] );
                         }
                         catch (NumberFormatException ex)
                         {
-                            System.out.println("Not a number");
-                            return;
+
+                                System.out.println("Not a number");
+                                return;
                         }
                     }
                     d_data.add( x );
@@ -1196,8 +1198,22 @@ minorVarianceCol,
                         }
                         catch (NumberFormatException ex)
                         {
-                            System.out.println("Not a number");
-                            return;
+                            //System.out.println(i + " " + data[i]);
+                            if( data[i].length() > 2 )
+                            {
+                                switch( data[i] )
+                                {
+                                    case "saab" : x = 0.0; break;
+                                    case "van" : x = 1.0; break;
+                                    case "bus" : x = 2.0; break;
+                                    default: x = 3.0; break;
+                                }
+                            }
+                            else
+                            {
+                                System.out.println("Not a number");
+                                return;
+                            }
                         }
                     }
                     d_data.add( x );
@@ -1426,11 +1442,14 @@ minorVarianceCol,
                 for (int i = 0; i < data.length; i++)
                 {
                     Double x;
-                    if( data[i].equals("") || data[i].equals("null")) {
+                    //System.out.println(i + " : " + data[i]);
+                    if( data[i].equals("") || data[i].equals("null"))
+                    {
                         x = null;
                         hasNulls = true;
                     }
-                    else {
+                    else
+                    {
                         try
                         {
                             x = Double.valueOf( data[i] );
@@ -1438,7 +1457,15 @@ minorVarianceCol,
                         catch (NumberFormatException ex)
                         {
                             System.out.println("Not a number");
-                            return;
+                            if( data[i].length() == 1 )
+                            {
+                                x = (double)((int)data[i].charAt(0));
+                            }
+                            else
+                            {
+                                return;
+                            }
+
                         }
                     }
                     d_data.add( x );

@@ -143,8 +143,8 @@ public class GraphTest
 
 
 
-//        graph.display( false );
-        graph.display( );
+        graph.display( false );
+//        graph.display( );
 
 //        try {
 //            sleep(1000);
